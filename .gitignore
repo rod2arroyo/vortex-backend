@@ -1,0 +1,14 @@
+# Variables de entorno
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Mac
+.DS_Store
