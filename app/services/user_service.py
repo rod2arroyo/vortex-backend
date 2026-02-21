@@ -71,5 +71,4 @@ class UserService:
             await db.commit()
 
         # 4. Retornar el usuario actualizado
-        # Al devolver el objeto SQL, Pydantic calculará 'is_onboarded' automáticamente
         return await UserService.get_user_by_id(db, user_id)

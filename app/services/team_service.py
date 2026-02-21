@@ -164,7 +164,6 @@ class TeamService:
             )
 
         # 3. Eliminar el equipo
-        # Gracias a cascade="all, delete-orphan" en el modelo,
         # los registros en team_members se borrarán automáticamente.
         await db.delete(team)
         await db.commit()

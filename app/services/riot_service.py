@@ -55,7 +55,6 @@ class RiotService:
             response = await client.get(url, headers=cls.HEADERS)
 
             if response.status_code != 200:
-                # Si falla (ej: 403 Forbidden por API Key expirada)
                 error_info = response.json().get("status", {})
                 raise HTTPException(
                     status_code=response.status_code,

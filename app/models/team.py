@@ -42,11 +42,7 @@ class TeamMember(Base):
 
     joined_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-    # Espejos para SQLAlchemy
     team = relationship("Team", back_populates="members")
-
-    # LA CLAVE DEL JOIN: A través de esta relación accederemos a user.player_accounts
-    # para obtener el formato 'Nombre#LAN' en el endpoint.
     user = relationship("User", back_populates="memberships")
 
     @property

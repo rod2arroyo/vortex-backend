@@ -73,7 +73,7 @@ class MatchProposal(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     match_id = Column(UUID(as_uuid=True), ForeignKey("matches.id"))
-    proposer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))  # Capitán que sugiere
+    proposer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
 
     # Almacena hasta 3 slots propuestos
     proposed_slots = Column(JSONB)

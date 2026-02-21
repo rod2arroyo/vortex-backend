@@ -3,10 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime, timezone, timedelta
 
-from app.models import user
 from app.models.user import User, RefreshToken
 from app.core.security import create_access_token, create_refresh_token
-from app.core.config import settings
 
 
 class AuthService:
@@ -24,10 +22,9 @@ class AuthService:
                 google_id=google_data["sub"]
             )
             db.add(user)
-            # El flush genera el user.id pero NO cierra la transacción
             await db.flush()
 
-            # 3. Generar tokens (Convertir UUID a string es obligatorio para JWT)
+        # 3. Generar tokens (Convertir UUID a string es obligatorio para JWT)
         user_id_str = str(user.id)
         access_token = create_access_token(subject=user_id_str)
         refresh_token_str = create_refresh_token(subject=user_id_str)
@@ -36,12 +33,11 @@ class AuthService:
         db_refresh = RefreshToken(
             user_id=user.id,
             token=refresh_token_str,
-            # Aseguramos que la fecha sea UTC
             expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)
         )
         db.add(db_refresh)
 
-        # 5. Guardar todo en la DB
+        # 5. Guardar en la DB
         await db.commit()
 
         return {
@@ -73,7 +69,6 @@ class AuthService:
 
         # 3. Validación de expiración con Timezones (UTC)
         now = datetime.now(timezone.utc)
-        # Si tu DB guarda naive, lo forzamos a UTC para comparar
         token_expiry = db_token.expires_at.replace(tzinfo=timezone.utc)
 
         if token_expiry < now:
@@ -81,7 +76,6 @@ class AuthService:
             raise HTTPException(status_code=401, detail="Refresh token ha expirado")
 
         # 4. Generación de nuevo acceso
-        # Convertimos el UUID del user_id a string para el JWT
         new_access = create_access_token(subject=str(db_token.user_id))
 
         return {

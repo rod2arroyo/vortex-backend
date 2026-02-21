@@ -14,14 +14,12 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str
 
     # --- Base de Datos ---
-    # Se añade aquí para que Pydantic la reconozca desde el .env
     DATABASE_URL: str
 
     # --- Configuración de Pydantic ---
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        # 'ignore' evita errores si hay variables en el .env que no declaraste aquí
         extra="ignore"
     )
 

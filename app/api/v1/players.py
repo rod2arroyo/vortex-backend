@@ -8,7 +8,6 @@ from sqlalchemy import select
 
 router = APIRouter(prefix="/players", tags=["players"])
 
-
 @router.post("/link-riot")
 async def link_riot_account(
         region: str,  # LAN, LAS, BR
@@ -33,8 +32,8 @@ async def link_riot_account(
         riot_tag=riot_data["tagLine"],
         region=region,
         puuid=riot_data["puuid"],
-        current_rank="Unranked",  # Valor inicial
-        is_verified=False  # Se verificará después con el código en el perfil
+        current_rank="Unranked",
+        is_verified=False
     )
 
     db.add(new_account)
@@ -61,5 +60,5 @@ async def get_riot_profile(
         "riot_id": player_acc.riot_id,
         "riot_tag": player_acc.riot_tag,
         "region": player_acc.region,
-        "ranks": ranks  # Aquí verás SoloQ, Flex, etc.
+        "ranks": ranks
     }
