@@ -17,10 +17,14 @@ class TeamUpdate(BaseModel):
     description: Optional[str] = None
     logo_url: Optional[str] = None # Listo para S3 en el futuro
 
+
 class TeamMemberResponse(BaseModel):
     user_id: UUID
     joined_at: datetime
-    riot_id_full: Optional[str] = None # Pydantic leerá esto de la @property
+
+    # AGREGAMOS ESTOS DOS CAMPOS:
+    player_name: str  # El nick de la página (Vortex)
+    riot_id_full: Optional[str] = None  # El nick del juego (LoL)
 
     class Config:
         from_attributes = True

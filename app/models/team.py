@@ -5,7 +5,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
-
 class Team(Base):
     """Modelo para representar los equipos en Vortex."""
     __tablename__ = "teams"
@@ -47,9 +46,15 @@ class TeamMember(Base):
 
     @property
     def riot_id_full(self) -> str | None:
-        """Propiedad calculada para Pydantic: devuelve 'Nombre#LAN' si la cuenta existe"""
+        """Devuelve 'Faker#T1' si tiene cuenta vinculada"""
         if self.user and self.user.player_accounts:
-            # Asumiendo que toma la primera cuenta vinculada
             account = self.user.player_accounts[0]
             return f"{account.riot_id}#{account.riot_tag}"
-        return "No vinculado"
+        return None  # O "No vinculado"
+
+    @property
+    def player_name(self) -> str | None:
+        """Devuelve el Nick Interno de Vortex (el nombre de la página)"""
+        if self.user:
+            return self.user.internal_nick
+        return "Usuario Desconocido"
