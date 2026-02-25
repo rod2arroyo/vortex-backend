@@ -14,15 +14,23 @@ class UserRole(enum.Enum):
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, index=True)
     google_id = Column(String, unique=True)
-    # Estos deben ser nullable=True para que el login inicial no falle
+
+    # Campos de perfil (Nullable para el inicio, obligatorios tras onboarding)
     internal_nick = Column(String, unique=True, index=True, nullable=True)
-    whatsapp = Column(String, nullable=True)
     country = Column(String, nullable=True)
+
+    # NUEVOS CAMPOS
+    phone_country_code = Column(String, nullable=True)  # Ej: "+51"
+    phone_number = Column(String, nullable=True)  # Ej: "999888777"
+    discord_id = Column(String, nullable=True)  # Ej: "usuario_discord"
+
     role = Column(Enum(UserRole), default=UserRole.PLAYER)
 
+    # Relaciones
     memberships = relationship("TeamMember", back_populates="user")
     player_accounts = relationship("PlayerAccount", back_populates="user")
     refresh_tokens = relationship("RefreshToken", back_populates="user")

@@ -11,7 +11,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=UserResponse)
 async def read_user_me(current_user: User = Depends(get_current_user)):
-    """Obtiene el perfil del usuario logueado"""
+    """Obtiene el perfil del usuario logueado con todos los datos nuevos"""
     return current_user
 
 @router.post("/onboarding", response_model=UserResponse)
@@ -20,7 +20,10 @@ async def complete_onboarding(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Primer registro de Nick, WhatsApp y País"""
+    """
+    Registro inicial obligatorio.
+    Requiere: Nick, País, Código País (+51), Teléfono y Discord ID.
+    """
     return await UserService.onboard_user(db, current_user.id, data)
 
 @router.patch("/update", response_model=UserResponse)
@@ -29,5 +32,5 @@ async def update_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Edición de datos existentes"""
+    """Actualiza cualquiera de los campos de perfil"""
     return await UserService.update_profile(db, current_user.id, data)
