@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v1 import auth, user, players, teams, invitations, notifications
+from app.api.v1 import auth, user, players, teams, invitations, notifications, tournament
 
 app = FastAPI(title="Vortex Esports API")
 
@@ -27,3 +27,4 @@ app.include_router(players.router, prefix="/api/v1")
 app.include_router(teams.router, prefix="/api/v1")
 app.include_router(invitations.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(tournament.router, prefix="/api/v1")

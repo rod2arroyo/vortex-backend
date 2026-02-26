@@ -1,11 +1,10 @@
 import enum
 import uuid
 
-from sqlalchemy import Column, UUID, String, Float, Enum, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, UUID, String, Float, Enum, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
-
 
 class TournamentStatus(enum.Enum):
     WAITING = "waiting"
@@ -15,15 +14,21 @@ class TournamentStatus(enum.Enum):
 
 class Tournament(Base):
     __tablename__ = "tournaments"
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String)
-    category = Column(String)  # Low, High, Free Elo
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String, nullable=False)
+
     entry_fee = Column(Float, default=0.0)
     prize_pool = Column(Float, default=0.0)
-    max_teams = Column(Integer)
+    max_teams = Column(Integer, default=16)
+
+    start_date = Column(DateTime(timezone=True), nullable=False)
     status = Column(Enum(TournamentStatus), default=TournamentStatus.WAITING)
 
-    registrations = relationship("Registration", back_populates="tournament")
+    # Relaciones
+    registrations = relationship("Registration", back_populates="tournament", cascade="all, delete-orphan")
 
 
 class Registration(Base):
