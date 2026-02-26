@@ -8,36 +8,48 @@ from sqlalchemy import select
 
 router = APIRouter(prefix="/players", tags=["players"])
 
+
 @router.post("/link-riot")
 async def link_riot_account(
-        region: str,  # LAN, LAS, BR
+        region: str,
         riot_nick: str,
         riot_tag: str,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    # 1. Validar si ya tiene una cuenta vinculada
-    query = select(PlayerAccount).where(PlayerAccount.user_id == current_user.id)
-    existing = (await db.execute(query)).scalars().first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Ya tienes una cuenta vinculada")
+    # 1. Validar si YO (el usuario actual) ya tengo una cuenta vinculada
+    query_me = select(PlayerAccount).where(PlayerAccount.user_id == current_user.id)
+    if (await db.execute(query_me)).scalars().first():
+        raise HTTPException(status_code=400,
+                            detail="Ya tienes una cuenta vinculada. Desvincúlala primero si quieres cambiar.")
 
-    # 2. Validar existencia en Riot
+    # 2. Obtener datos de Riot (Obtenemos el PUUID)
     riot_data = await RiotService.get_riot_account(riot_nick, riot_tag)
+    puuid = riot_data["puuid"]
 
-    # 3. Crear registro en nuestra tabla
+    # 3. NUEVA VALIDACIÓN: Verificar si la cuenta de RIOT ya está registrada en el sistema
+    # Esto evita el error 500 "IntegrityError"
+    query_puuid = select(PlayerAccount).where(PlayerAccount.puuid == puuid)
+    account_owner = (await db.execute(query_puuid)).scalars().first()
+
+    if account_owner:
+        # Opcional: Podrías verificar si account_owner.user_id == current_user.id para dar un mensaje más específico
+        raise HTTPException(status_code=409, detail="Esta cuenta de Riot ya está vinculada a otro usuario en Vortex.")
+
+    # 4. Si pasamos las validaciones, creamos el registro
     new_account = PlayerAccount(
         user_id=current_user.id,
         riot_id=riot_data["gameName"],
         riot_tag=riot_data["tagLine"],
         region=region,
-        puuid=riot_data["puuid"],
-        current_rank="Unranked",
+        puuid=puuid,
+        current_rank="Unranked",  # Aquí podrías llamar a get_player_rank()
         is_verified=False
     )
 
     db.add(new_account)
     await db.commit()
+
     return {"message": "Cuenta vinculada exitosamente", "data": riot_data}
 
 

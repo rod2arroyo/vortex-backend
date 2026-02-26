@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
@@ -41,3 +42,33 @@ async def mark_as_read(
         notif.is_read = True
         await db.commit()
     return {"ok": True}
+
+@router.delete("/{notification_id}", status_code=status.HTTP_200_OK)
+async def delete_notification(
+    notification_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Elimina una notificación específica.
+    Útil para limpiar la bandeja o cuando se rechaza una invitación manualmente.
+    """
+    # 1. Buscamos la notificación asegurando que pertenezca al usuario actual
+    query = select(Notification).where(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    )
+    result = await db.execute(query)
+    notification = result.scalars().first()
+
+    if not notification:
+        raise HTTPException(
+            status_code=404,
+            detail="Notificación no encontrada o no te pertenece"
+        )
+
+    # 2. Eliminamos
+    await db.delete(notification)
+    await db.commit()
+
+    return {"message": "Notificación eliminada correctamente"}
